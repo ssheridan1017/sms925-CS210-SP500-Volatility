@@ -14,15 +14,15 @@ raw = "data/stock_macro_data.csv"
 clean = "sp500_clean.csv"
 lag = "sp500_with_lags.csv"
 
-df_raw = pd.read)_csv(raw)
+df_raw = pd.read_csv(raw)
 
 print (f"Shape: {df_raw.shape[0]:,} rows x {df_raw.shape[1]} columns")
 print (f"Stock Indexes: {df_raw['Stock Index'].value_counts().to_dict()}")
 print (f"Null Values: {df_raw.isnull().sum().sum()} total")
-print f("Duplicates : {df_raw.duplicated().sum()} rows")
+print (f"Duplicates : {df_raw.duplicated().sum()} rows")
 
 #Filter S&P500 Only
-df = df_raw[df_raw['Stock Index"] == "S&P 500"].copy()
+df = df_raw[df_raw['Stock Index'] == "S&P 500"].copy()
 print(f"After Filtering to S&P500 ONLY: {len(df):,} rows")
 
 #Column Names
