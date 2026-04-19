@@ -12,6 +12,7 @@ import numpy as np
 # Raw Data
 raw = "data/stock_macro_data.csv"
 clean = "sp500_clean.csv"
+lag = "sp500_with_lags.csv"
 
 df_raw = pd.read)_csv(raw)
 
@@ -72,11 +73,52 @@ print(f"Rows where Open is outside [Low, High]: {len(bad_open)}")
 print(f"Rows where Close is outside [Low, High]: {len(bad_close)}")
 
 #Check if volume is always positive
+bad_vol = df[df['volume']<=0]
+print(f"Rows with non-positive volume: {len(bad_vol)}")
+
+#Check for nulls
 null_counts = df.isnull().sum()
 if null_counts.sum() == 0:
        print("No nulls after filtering")
 else:
       print("Null Values Detected")
       print(null_counts[null_counts>0])
-           
-         
+
+#Feature Engineering for Volatility
+df['daily_volatility_pct'] = (df['high'] - df['low']) / df['open'] * 100
+
+#Lag Features (account for downtime in change of indicator and prices for this we will look at a 1 day lag)
+lag_cols= [
+    "gdp_growth_pct",
+    "inflation_rate_pct",
+    "unemployment_rate_pct",
+    "consumer_confidence",
+]
+df_lag = df.copy()
+for col in lag_cols:
+        df_lag[f"{col}_lag1"] = df_lag[col].shift(1)
+df_lag.dropna(inplace=True)
+df_lag.reset_index(drop=True, inplace = True)
+
+#Data Summary
+print("CLEAN DATA SUMMARY (sp500_clean.csv)")
+print(f"Shape      : {df.shape[0]:,} rows × {df.shape[1]} columns")
+print(f"Date range : {df['date'].min().date()}  →  {df['date'].max().date()}")
+print(f"Null values: {df.isnull().sum().sum()}")
+ 
+print()
+print("LAG DATASET SUMMARY (sp500_with_lags.csv)")
+print(f"Shape      : {df_lag.shape[0]:,} rows × {df_lag.shape[1]} columns")
+print(f"Date range : {df_lag['date'].min().date()}  →  {df_lag['date'].max().date()}")
+print(f"Null values: {df_lag.isnull().sum().sum()}")
+print()
+print("Added lag columns:")
+for col in lag_cols:
+    print(f"  {col}_lag1")
+
+#Export
+df.to_csv(clean, index=False)
+df_lag.to_csv(lag, index=False)
+
+
+      
