@@ -153,51 +153,139 @@ conn.commit()
 print("✓ Created sp500_analysis table via JOIN on date")
 
 # ── EXAMPLE QUERIES ───────────────────────────────────────────────────────────
-# These show you can pull meaningful insights from the database.
-# Great to include in your final report to demonstrate SQL usage.
+# Each query answers a real analytical question combining price action
+# and macro indicators — directly supporting the project's goal of
+# understanding how macro conditions affect S&P 500 behavior.
 
 print()
 print("=" * 60)
-print("EXAMPLE QUERIES")
+print("ANALYTICAL QUERIES")
 print("=" * 60)
 
-# Query 1: High volatility days (top 10)
-print("\n--- Top 10 Most Volatile Days ---")
+# ── QUERY 1: BULLISH vs BEARISH HIGH-VOLATILITY DAYS ─────────────────────────
+# On the most volatile days, did the market close up or down?
+# close > open = bullish (buyers won), close < open = bearish (sellers won)
+# This shows volatility is not just about magnitude — direction matters too.
+print("\n--- Top 10 Most Volatile Days: Bullish or Bearish? ---")
 q1 = pd.read_sql_query("""
-    SELECT date, close, daily_volatility_pct, inflation_rate_pct, unemployment_rate_pct
+    SELECT
+        date,
+        ROUND(open, 2)                          AS open,
+        ROUND(close, 2)                         AS close,
+        ROUND(high, 2)                          AS high,
+        ROUND(low, 2)                           AS low,
+        ROUND(close - open, 2)                  AS daily_return,
+        CASE
+            WHEN close > open THEN 'Bullish'
+            ELSE 'Bearish'
+        END                                     AS direction,
+        ROUND(daily_volatility_pct, 3)          AS volatility_pct,
+        ROUND(inflation_rate_pct, 2)            AS inflation,
+        ROUND(unemployment_rate_pct, 2)         AS unemployment
     FROM sp500_analysis
     ORDER BY daily_volatility_pct DESC
     LIMIT 10
 """, conn)
 print(q1.to_string(index=False))
 
-# Query 2: Average volatility by year
-print("\n--- Average Volatility by Year ---")
+# ── QUERY 2: MACRO ENVIRONMENT vs MARKET PERFORMANCE BY YEAR ─────────────────
+# For each year, how did the macro environment (inflation, unemployment,
+# interest rates) relate to average price levels and volatility?
+# This is the core question of the project — do macro conditions predict behavior?
+print("\n--- Yearly Macro Environment vs Market Performance ---")
 q2 = pd.read_sql_query("""
     SELECT
-        SUBSTR(date, 1, 4) AS year,
-        ROUND(AVG(daily_volatility_pct), 3) AS avg_volatility,
-        ROUND(AVG(inflation_rate_pct), 3)   AS avg_inflation,
-        ROUND(AVG(unemployment_rate_pct), 3) AS avg_unemployment
+        SUBSTR(date, 1, 4)                          AS year,
+        ROUND(AVG(close), 2)                        AS avg_close,
+        ROUND(MAX(high) - MIN(low), 2)              AS annual_price_range,
+        ROUND(AVG(close - open), 3)                 AS avg_daily_return,
+        ROUND(AVG(daily_volatility_pct), 3)         AS avg_volatility,
+        ROUND(AVG(inflation_rate_pct), 2)           AS avg_inflation,
+        ROUND(AVG(unemployment_rate_pct), 2)        AS avg_unemployment,
+        ROUND(AVG(interest_rate_pct), 2)            AS avg_interest_rate,
+        ROUND(AVG(gdp_growth_pct), 2)               AS avg_gdp_growth
     FROM sp500_analysis
     GROUP BY year
     ORDER BY year
 """, conn)
 print(q2.to_string(index=False))
 
-# Query 3: High inflation + high volatility days
-print("\n--- Days with High Inflation (>3%) AND High Volatility (>5%) ---")
+# ── QUERY 3: HIGH INTEREST RATE ENVIRONMENT vs LOW ───────────────────────────
+# Compare average price action and volatility when interest rates are
+# above vs below the median. Tests whether rate environment affects market behavior.
+print("\n--- High vs Low Interest Rate Environment (split at median) ---")
 q3 = pd.read_sql_query("""
-    SELECT date, close, daily_volatility_pct, inflation_rate_pct, interest_rate_pct
+    SELECT
+        CASE
+            WHEN interest_rate_pct > (SELECT AVG(interest_rate_pct) FROM sp500_analysis)
+            THEN 'High Interest Rate'
+            ELSE 'Low Interest Rate'
+        END                                         AS rate_environment,
+        COUNT(*)                                    AS trading_days,
+        ROUND(AVG(close), 2)                        AS avg_close,
+        ROUND(AVG(close - open), 3)                 AS avg_daily_return,
+        ROUND(AVG(high - low), 3)                   AS avg_intraday_range,
+        ROUND(AVG(daily_volatility_pct), 3)         AS avg_volatility
     FROM sp500_analysis
-    WHERE inflation_rate_pct > 3.0
-      AND daily_volatility_pct > 5.0
-    ORDER BY daily_volatility_pct DESC
-    LIMIT 10
+    GROUP BY rate_environment
 """, conn)
 print(q3.to_string(index=False))
 
-# Query 4: Row count verification
+# ── QUERY 4: RECESSION SIGNAL DAYS ───────────────────────────────────────────
+# Flag days where both GDP growth was below 2% AND unemployment was rising
+# (above its yearly average) — a basic recession signal.
+# Then check: were those days more volatile and more bearish?
+print("\n--- Recession Signal Days vs Normal Days ---")
+q4 = pd.read_sql_query("""
+    SELECT
+        CASE
+            WHEN gdp_growth_pct < 2.0
+             AND unemployment_rate_pct > (SELECT AVG(unemployment_rate_pct) FROM sp500_analysis)
+            THEN 'Recession Signal'
+            ELSE 'Normal'
+        END                                         AS market_condition,
+        COUNT(*)                                    AS trading_days,
+        ROUND(AVG(close), 2)                        AS avg_close,
+        ROUND(AVG(close - open), 3)                 AS avg_daily_return,
+        ROUND(AVG(high - low), 3)                   AS avg_intraday_range,
+        ROUND(AVG(daily_volatility_pct), 3)         AS avg_volatility,
+        SUM(CASE WHEN close < open THEN 1 ELSE 0 END) AS bearish_days
+    FROM sp500_analysis
+    GROUP BY market_condition
+""", conn)
+print(q4.to_string(index=False))
+
+# ── QUERY 5: BEST AND WORST MACRO ENVIRONMENTS FOR THE S&P 500 ───────────────
+# Group days into 4 macro regimes based on inflation and unemployment
+# being above or below their averages. Which combo produced the best returns?
+print("\n--- S&P 500 Performance by Macro Regime ---")
+q5 = pd.read_sql_query("""
+    SELECT
+        CASE
+            WHEN inflation_rate_pct <= (SELECT AVG(inflation_rate_pct) FROM sp500_analysis)
+             AND unemployment_rate_pct <= (SELECT AVG(unemployment_rate_pct) FROM sp500_analysis)
+            THEN 'Low Inflation + Low Unemployment'
+            WHEN inflation_rate_pct > (SELECT AVG(inflation_rate_pct) FROM sp500_analysis)
+             AND unemployment_rate_pct <= (SELECT AVG(unemployment_rate_pct) FROM sp500_analysis)
+            THEN 'High Inflation + Low Unemployment'
+            WHEN inflation_rate_pct <= (SELECT AVG(inflation_rate_pct) FROM sp500_analysis)
+             AND unemployment_rate_pct > (SELECT AVG(unemployment_rate_pct) FROM sp500_analysis)
+            THEN 'Low Inflation + High Unemployment'
+            ELSE 'High Inflation + High Unemployment'
+        END                                         AS macro_regime,
+        COUNT(*)                                    AS trading_days,
+        ROUND(AVG(close), 2)                        AS avg_close,
+        ROUND(AVG(close - open), 3)                 AS avg_daily_return,
+        ROUND(AVG(daily_volatility_pct), 3)         AS avg_volatility,
+        SUM(CASE WHEN close > open THEN 1 ELSE 0 END) AS bullish_days,
+        SUM(CASE WHEN close < open THEN 1 ELSE 0 END) AS bearish_days
+    FROM sp500_analysis
+    GROUP BY macro_regime
+    ORDER BY avg_daily_return DESC
+""", conn)
+print(q5.to_string(index=False))
+
+# ── ROW COUNT VERIFICATION ────────────────────────────────────────────────────
 cursor.execute("SELECT COUNT(*) FROM sp500_analysis")
 count = cursor.fetchone()[0]
 print(f"\n--- sp500_analysis total rows: {count:,} ---")
@@ -206,4 +294,3 @@ print(f"\n--- sp500_analysis total rows: {count:,} ---")
 conn.close()
 print()
 print(f"✓ Database saved to: {DB_PATH}")
-print("  (Add sp500_project.db to your .gitignore — commit only this script)")
