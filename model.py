@@ -20,7 +20,7 @@ from sklearn.metrics import mean_absolute_error, root_mean_squared_error
 from sklearn.preprocessing import StandardScaler
 
 # ── LOAD CLEAN DATA ───────────────────────────────────────────────────────────
-df = pd.read_csv("sp500_clean.csv", parse_dates=["date"])
+df = pd.read_csv("sp500_with_lags.csv", parse_dates=["date"])
 print(f"Loaded: {df.shape[0]:,} rows × {df.shape[1]} columns")
 
 # ── DEFINE FEATURES AND TARGET ────────────────────────────────────────────────
@@ -37,6 +37,12 @@ FEATURE_COLS = [
     "crude_oil_price",
     "gold_price",
     "consumer_spending_bln",
+
+      # lagged features - measures effect of 1 day delay between price changes and indicators
+      "gdp_growth_pct_lag1",
+    "inflation_rate_pct_lag1",
+    "unemployment_rate_pct_lag1",
+    "consumer_confidence_lag1",
 ]
 TARGET_COL = "close"
 
