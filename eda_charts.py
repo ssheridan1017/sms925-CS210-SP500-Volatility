@@ -1,8 +1,8 @@
 """
 CS210 Final Project - Predicting S&P500 Volatility
 
-Goal: This file will cover simple basic data analysis and create visualizations
-that I will use in my oral and final report. This is where we will build relationships
+Goal: This file will cover simple basic data analysis and create charts
+that I will use in my final report. This is where we can visualize relationships
 between daily volatility and macroeconomic indicators.
 
 *This script is ran after the dataset is cleaned in "cleaning.py"
@@ -19,7 +19,7 @@ df = pd.read_csv("sp500_clean.csv"), parse_dates=['date'])
 print(f"{df.shape[0]:,} rows x {df.shape[1]} colums")
 print(f"Date Range: {df['date'].min().date()} to {df['date'].max().date()}")
 
-# ── CHART 1: S&P 500 CLOSING PRICE OVER TIME ─────────────────────────────────
+# CHART 1: S&P 500 CLOSING PRICE OVER TIME
 # Shows the overall price trend across the dataset period.
 fig, ax = plt.subplots(figsize=(12, 4))
 ax.plot(df["date"], df["close"], color="#1f77b4", linewidth=1)
@@ -30,9 +30,9 @@ ax.grid(True, alpha=0.3)
 plt.tight_layout()
 plt.savefig("chart1_close_price.png", dpi=150)
 plt.close()
-print("✓ Saved chart1_close_price.png")
+print("Saved chart1_close_price.png")
  
-# ── CHART 2: DAILY VOLATILITY OVER TIME ──────────────────────────────────────
+# CHART 2: DAILY VOLATILITY OVER TIME 
 # This is your TARGET VARIABLE. You should see spikes around major events.
 fig, ax = plt.subplots(figsize=(12, 4))
 ax.plot(df["date"], df["daily_volatility_pct"], color="#d62728", linewidth=0.8, alpha=0.8)
@@ -43,9 +43,9 @@ ax.grid(True, alpha=0.3)
 plt.tight_layout()
 plt.savefig("chart2_volatility_over_time.png", dpi=150)
 plt.close()
-print("✓ Saved chart2_volatility_over_time.png")
+print("Saved chart2_volatility_over_time.png")
  
-# ── CHART 3: VOLATILITY DISTRIBUTION ─────────────────────────────────────────
+# CHART 3: VOLATILITY DISTRIBUTION
 # Histogram showing what range of volatility is most common.
 fig, ax = plt.subplots(figsize=(8, 4))
 ax.hist(df["daily_volatility_pct"], bins=40, color="#ff7f0e", edgecolor="white")
@@ -58,9 +58,9 @@ ax.legend()
 plt.tight_layout()
 plt.savefig("chart3_volatility_distribution.png", dpi=150)
 plt.close()
-print("✓ Saved chart3_volatility_distribution.png")
+print("Saved chart3_volatility_distribution.png")
  
-# ── CHART 4: MACRO INDICATORS OVER TIME ──────────────────────────────────────
+# CHART 4: MACRO INDICATORS OVER TIME 
 # Four subplots showing how each key indicator changed over the period.
 fig, axes = plt.subplots(4, 1, figsize=(12, 10), sharex=True)
  
@@ -81,9 +81,9 @@ axes[-1].set_xlabel("Date")
 plt.tight_layout()
 plt.savefig("chart4_macro_indicators.png", dpi=150)
 plt.close()
-print("✓ Saved chart4_macro_indicators.png")
+print("Saved chart4_macro_indicators.png")
  
-# ── CHART 5: CORRELATION HEATMAP ─────────────────────────────────────────────
+# CHART 5: CORRELATION HEATMAP 
 # Shows which indicators correlate most with daily volatility.
 # This directly informs which features you use in your Random Forest.
 macro_cols = [
@@ -122,9 +122,9 @@ ax.set_title("Correlation Heatmap — Macro Indicators vs Volatility", fontsize=
 plt.tight_layout()
 plt.savefig("chart5_correlation_heatmap.png", dpi=150)
 plt.close()
-print("✓ Saved chart5_correlation_heatmap.png")
+print("Saved chart5_correlation_heatmap.png")
  
-# ── CHART 6: TOP INDICATORS vs VOLATILITY (SCATTER) ──────────────────────────
+# CHART 6: TOP INDICATORS vs VOLATILITY (SCATTER)
 # Scatter plots for the indicators with the strongest correlation to volatility.
 fig, axes = plt.subplots(2, 2, figsize=(10, 8))
 scatter_cols = [
@@ -150,22 +150,20 @@ plt.suptitle("Macro Indicators vs Daily Volatility", fontsize=13, y=1.01)
 plt.tight_layout()
 plt.savefig("chart6_scatter_plots.png", dpi=150, bbox_inches="tight")
 plt.close()
-print("✓ Saved chart6_scatter_plots.png")
+print("Saved chart6_scatter_plots.png")
  
-# ── PRINT CORRELATION SUMMARY ─────────────────────────────────────────────────
-print()
-print("=" * 50)
+#PRINT CORRELATION SUMMARY 
+
 print("CORRELATION WITH DAILY VOLATILITY (sorted)")
-print("=" * 50)
+
 corr_with_vol = corr_matrix["daily_volatility_pct"].drop("daily_volatility_pct").sort_values()
 for col, val in corr_with_vol.items():
     label = col.replace("_pct", "").replace("_", " ").title()
-    bar = "█" * int(abs(val) * 20)
+    bar = "█" * int(abs(val) * 20) 
     direction = "+" if val > 0 else "-"
     print(f"  {label:<30} {direction}{abs(val):.3f}  {bar}")
  
 print()
-print("All charts saved. Review them before moving to modeling.")
 ax.set_title("S&P 500 Closing Price (2000–2008)", fontsize=14)
 ax.set_xlabel("Date")
 ax.set_ylabel("Close Price (USD)")
