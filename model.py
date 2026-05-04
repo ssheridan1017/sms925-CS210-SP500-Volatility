@@ -1,11 +1,11 @@
 """
-CS210 Final Project - Machine Learning Models
+CS210 Final Project - Predicting S&P 500 Volatility
 Sam Sheridan
 
-Goal: Use macro indicators to predict S&P 500 closing price.
-      Compare a Random Forest Regressor against a Linear Regression
-      baseline. Evaluate using MAE and RMSE. Extract feature importance
-      to identify which indicators most influence closing price.
+Goal: Measure the effect that macroeconomic indicators have on S&P 500 daily volatility (engineered feature)
+      To achieve this we use two models, a linear regression model and a Random Forest Regressor. We evaluate
+      the skill and accuracy of these models with MAE and RMSE, we can use this to isolate indicators that have
+      the most influence on daily volatility percent.
 
 Run AFTER data_cleaning.py — this script reads sp500_clean.csv.
 """
@@ -19,13 +19,13 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error, root_mean_squared_error
 from sklearn.preprocessing import StandardScaler
 
-# ── LOAD CLEAN DATA ───────────────────────────────────────────────────────────
+# load data
 df = pd.read_csv("sp500_with_lags.csv", parse_dates=["date"])
 print(f"Loaded: {df.shape[0]:,} rows × {df.shape[1]} columns")
 
-# ── DEFINE FEATURES AND TARGET ────────────────────────────────────────────────
+# list features
 # X: all macro indicators fed in simultaneously
-# y: closing price — what we are trying to predict
+# y: daily_volatility_pct — what we are trying to predict
 # We deliberately exclude open, high, low, volume from features
 # because those are same-day values — using them would be overfitting.
 FEATURE_COLS = [
@@ -44,7 +44,7 @@ FEATURE_COLS = [
     "unemployment_rate_pct_lag1",
     "consumer_confidence_lag1",
 ]
-TARGET_COL = "close"
+TARGET_COL = "daily_volatility_pct"
 
 X = df[FEATURE_COLS]
 y = df[TARGET_COL]
@@ -53,10 +53,8 @@ print(f"\nFeatures : {len(FEATURE_COLS)} macro indicators")
 print(f"Target   : {TARGET_COL}")
 print(f"Samples  : {len(X):,}")
 
-# ── TRAIN / TEST SPLIT ────────────────────────────────────────────────────────
-# 80% training, 20% testing
-# shuffle=False preserves time order — important for financial data
-# so we train on earlier dates and test on later dates
+# training/testing data, use shuffle = False to train the model on earlier dates (2000-2006), and train the model on later data (2006-2008)
+
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, shuffle=False
 )
@@ -64,20 +62,15 @@ X_train, X_test, y_train, y_test = train_test_split(
 print(f"\nTrain set: {len(X_train):,} rows")
 print(f"Test set : {len(X_test):,} rows")
 
-# ── SCALE FEATURES ────────────────────────────────────────────────────────────
-# Required for Linear Regression to work properly.
-# Random Forest does not need scaling but we apply it to both
-# so the comparison is fair.
+# scaling features (for linear regression models only)
+
 scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled  = scaler.transform(X_test)
 
-# ── MODEL 1: LINEAR REGRESSION (BASELINE) ────────────────────────────────────
-# This is the baseline model your proposal mentioned.
-# If Random Forest beats this, it proves non-linear modeling is worth it.
-print("\n" + "=" * 60)
+# LINEAR REGRESSION MODEL
+
 print("MODEL 1: LINEAR REGRESSION (Baseline)")
-print("=" * 60)
 
 lr_model = LinearRegression()
 lr_model.fit(X_train_scaled, y_train)
@@ -91,13 +84,11 @@ print(f"RMSE (Root Mean Squared Error)  : {lr_rmse:.2f}")
 print(f"Interpretation: On average, Linear Regression predicted")
 print(f"closing price within ${lr_mae:.2f} of the actual value.")
 
-# ── MODEL 2: RANDOM FOREST REGRESSOR ─────────────────────────────────────────
-# Your primary model from the proposal.
+# RANDOM FOREST REGRESSOR 
 # n_estimators=100 means 100 decision trees vote on the prediction.
 # random_state=42 ensures reproducible results every time you run it.
-print("\n" + "=" * 60)
+
 print("MODEL 2: RANDOM FOREST REGRESSOR")
-print("=" * 60)
 
 rf_model = RandomForestRegressor(
     n_estimators=100,
@@ -115,10 +106,10 @@ print(f"RMSE (Root Mean Squared Error)  : {rf_rmse:.2f}")
 print(f"Interpretation: On average, Random Forest predicted")
 print(f"closing price within ${rf_mae:.2f} of the actual value.")
 
-# ── MODEL COMPARISON ──────────────────────────────────────────────────────────
-print("\n" + "=" * 60)
+# Comparing Results 
+
 print("MODEL COMPARISON")
-print("=" * 60)
+
 print(f"{'Metric':<10} {'Linear Regression':>20} {'Random Forest':>20} {'Improvement':>15}")
 print("-" * 70)
 mae_improvement  = ((lr_mae  - rf_mae)  / lr_mae)  * 100
@@ -134,13 +125,9 @@ else:
     print(f"\n Note: Linear Regression performed similarly or better.")
     print(f"  This may be due to the synthetic nature of the dataset.")
 
-# ── FEATURE IMPORTANCE ────────────────────────────────────────────────────────
-# This is the core finding — which macro indicators matter most
-# for predicting S&P 500 closing price?
-print("\n" + "=" * 60)
-print("FEATURE IMPORTANCE (Random Forest)")
-print("=" * 60)
+# Feature Analysis
 
+print("FEATURE IMPORTANCE (Random Forest)")
 importance_df = pd.DataFrame({
     "indicator" : FEATURE_COLS,
     "importance": rf_model.feature_importances_
@@ -152,7 +139,7 @@ for _, row in importance_df.iterrows():
     bar = "█" * int(row["importance"] * 100)
     print(f"  {row['rank']}. {row['indicator']:<30} {row['importance']:.3f}  {bar}")
 
-# ── CHART 1: FEATURE IMPORTANCE BAR CHART ────────────────────────────────────
+# CHART 1: FEATURE IMPORTANCE BAR CHART 
 fig, ax = plt.subplots(figsize=(10, 5))
 colors = ["#1f77b4" if i == 0 else "#aec7e8" for i in range(len(importance_df))]
 ax.barh(importance_df["indicator"][::-1],
@@ -166,7 +153,7 @@ plt.savefig("chart7_feature_importance.png", dpi=150)
 plt.close()
 print("\n Saved chart7_feature_importance.png")
 
-# ── CHART 2: ACTUAL vs PREDICTED (RANDOM FOREST) ─────────────────────────────
+# CHART 2: ACTUAL vs PREDICTED (RANDOM FOREST)
 # Shows how well the model tracks real closing prices on the test set
 test_dates = df["date"].iloc[len(X_train):].reset_index(drop=True)
 
@@ -184,7 +171,7 @@ plt.savefig("chart8_actual_vs_predicted.png", dpi=150)
 plt.close()
 print(" Saved chart8_actual_vs_predicted.png")
 
-# ── CHART 3: MODEL COMPARISON BAR CHART ──────────────────────────────────────
+# CHART 3: MODEL COMPARISON BAR CHART 
 fig, axes = plt.subplots(1, 2, figsize=(9, 4))
 
 metrics = ["MAE", "RMSE"]
