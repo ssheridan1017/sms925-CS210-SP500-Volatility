@@ -88,7 +88,7 @@ python model.py
 ---
 
 ## Key Findings
-- **Top predictor:** Lagged unemployment rate ranked #1 in feature importance (10.3%), outranking same-day unemployment (8.4%) — directly supporting the lagging effect hypothesis
+- **Top predictor:** Lagged unemployment rate ranked #1 in feature importance (10.3%), outranking same-day unemployment (8.4%), this directly supports the lagging effect hypothesis
 - **Lagging effect confirmed:** Both unemployment and inflation showed higher predictive power in their lagged form, suggesting macro indicators affect volatility with a 1-day delay
 - **Model performance:** Linear Regression (MAE: 1.51%) and Random Forest (MAE: 1.54%) performed similarly, consistent with the synthetic nature of the dataset
 - **SQL findings:** Recession signal days had nearly 2.5x worse average daily returns (-1.66 vs -0.69). The best macro regime was low inflation + low unemployment (avg return +1.39)
