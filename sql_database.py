@@ -13,14 +13,14 @@ import pandas as pd
 import sqlite3
 import os
 
-# ── LOAD CLEAN DATA ───────────────────────────────────────────────────────────
+# LOAD CLEAN DATA 
 CLEAN_PATH = "sp500_clean.csv"
 DB_PATH    = "sp500_project.db"
 
 df = pd.read_csv(CLEAN_PATH, parse_dates=["date"])
 print(f"Loaded: {df.shape[0]:,} rows × {df.shape[1]} columns")
 
-# ── SPLIT INTO TWO TABLES ─────────────────────────────────────────────────────
+# SPLIT INTO TWO TABLES 
 # Per the proposal: separate tables for price data and macro indicators,
 # joined by date key.
 
@@ -59,13 +59,12 @@ macro_cols = [
 ]
 df_macro = df[macro_cols].copy()
 
-# ── CONNECT TO SQLITE DATABASE ────────────────────────────────────────────────
-# This creates the .db file if it doesn't exist yet
+#  CONNECT TO SQLITE DATABASE 
 conn = sqlite3.connect(DB_PATH)
 cursor = conn.cursor()
 print(f"\nConnected to database: {DB_PATH}")
 
-# ── CREATE TABLES ─────────────────────────────────────────────────────────────
+# CREATE TABLES 
 # Drop tables first so the script is re-runnable without errors
 cursor.execute("DROP TABLE IF EXISTS sp500_prices")
 cursor.execute("DROP TABLE IF EXISTS macro_indicators")
@@ -106,9 +105,9 @@ cursor.execute("""
     )
 """)
 
-print("✓ Tables created: sp500_prices, macro_indicators")
+print("Tables created: sp500_prices, macro_indicators")
 
-# ── INSERT DATA ───────────────────────────────────────────────────────────────
+# INSERT DATA
 # Convert date to string for SQLite storage
 df_prices_load  = df_prices.copy()
 df_macro_load   = df_macro.copy()
@@ -121,7 +120,7 @@ df_macro_load.to_sql("macro_indicators",  conn, if_exists="append", index=False)
 print(f"✓ Inserted {len(df_prices_load):,} rows into sp500_prices")
 print(f"✓ Inserted {len(df_macro_load):,} rows into macro_indicators")
 
-# ── JOIN TABLES BY DATE ───────────────────────────────────────────────────────
+# JOIN TABLES BY DATE 
 # This is the core SQL step from the proposal — join prices and macro data
 # using date as the key to create one unified analysis table.
 join_query = """
@@ -150,19 +149,19 @@ join_query = """
 """
 cursor.execute(join_query)
 conn.commit()
-print("✓ Created sp500_analysis table via JOIN on date")
+print("Created sp500_analysis table via JOIN on date")
 
-# ── EXAMPLE QUERIES ───────────────────────────────────────────────────────────
+# EXAMPLE QUERIES
 # Each query answers a real analytical question combining price action
 # and macro indicators — directly supporting the project's goal of
 # understanding how macro conditions affect S&P 500 behavior.
 
 print()
-print("=" * 60)
-print("ANALYTICAL QUERIES")
-print("=" * 60)
 
-# ── QUERY 1: BULLISH vs BEARISH HIGH-VOLATILITY DAYS ─────────────────────────
+print("ANALYTICAL QUERIES")
+
+
+# QUERY 1: BULLISH vs BEARISH HIGH-VOLATILITY DAYS 
 # On the most volatile days, did the market close up or down?
 # close > open = bullish (buyers won), close < open = bearish (sellers won)
 # This shows volatility is not just about magnitude — direction matters too.
@@ -188,7 +187,7 @@ q1 = pd.read_sql_query("""
 """, conn)
 print(q1.to_string(index=False))
 
-# ── QUERY 2: MACRO ENVIRONMENT vs MARKET PERFORMANCE BY YEAR ─────────────────
+# QUERY 2: MACRO ENVIRONMENT vs MARKET PERFORMANCE BY YEAR 
 # For each year, how did the macro environment (inflation, unemployment,
 # interest rates) relate to average price levels and volatility?
 # This is the core question of the project — do macro conditions predict behavior?
@@ -210,7 +209,7 @@ q2 = pd.read_sql_query("""
 """, conn)
 print(q2.to_string(index=False))
 
-# ── QUERY 3: HIGH INTEREST RATE ENVIRONMENT vs LOW ───────────────────────────
+# QUERY 3: HIGH INTEREST RATE ENVIRONMENT vs LOW 
 # Compare average price action and volatility when interest rates are
 # above vs below the median. Tests whether rate environment affects market behavior.
 print("\n--- High vs Low Interest Rate Environment (split at median) ---")
@@ -231,7 +230,7 @@ q3 = pd.read_sql_query("""
 """, conn)
 print(q3.to_string(index=False))
 
-# ── QUERY 4: RECESSION SIGNAL DAYS ───────────────────────────────────────────
+# QUERY 4: RECESSION SIGNAL DAYS 
 # Flag days where both GDP growth was below 2% AND unemployment was rising
 # (above its yearly average) — a basic recession signal.
 # Then check: were those days more volatile and more bearish?
@@ -255,7 +254,7 @@ q4 = pd.read_sql_query("""
 """, conn)
 print(q4.to_string(index=False))
 
-# ── QUERY 5: BEST AND WORST MACRO ENVIRONMENTS FOR THE S&P 500 ───────────────
+# QUERY 5: BEST AND WORST MACRO ENVIRONMENTS FOR THE S&P 500 
 # Group days into 4 macro regimes based on inflation and unemployment
 # being above or below their averages. Which combo produced the best returns?
 print("\n--- S&P 500 Performance by Macro Regime ---")
@@ -285,12 +284,12 @@ q5 = pd.read_sql_query("""
 """, conn)
 print(q5.to_string(index=False))
 
-# ── ROW COUNT VERIFICATION ────────────────────────────────────────────────────
+# ROW COUNT VERIFICATION 
 cursor.execute("SELECT COUNT(*) FROM sp500_analysis")
 count = cursor.fetchone()[0]
 print(f"\n--- sp500_analysis total rows: {count:,} ---")
 
-# ── CLOSE CONNECTION ──────────────────────────────────────────────────────────
+# CLOSE CONNECTION 
 conn.close()
 print()
 print(f"✓ Database saved to: {DB_PATH}")
