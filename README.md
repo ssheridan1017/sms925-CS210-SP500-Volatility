@@ -1,5 +1,5 @@
 # sms925-CS210-SP500-Volatility
-# Forecasting S&P 500 Volatility: A Machine Learning Approach using Macroeconomic Indicators (2000-2024)
+# Forecasting S&P 500 Volatility: A Machine Learning Approach using Macroeconomic Indicators (2000-2008)
 **CS 210: Data Management for Data Science**
 **Sam Sheridan**
 
@@ -88,10 +88,10 @@ python model.py
 ---
 
 ## Key Findings
-- **Feature Importance:** GDP growth and consumer spending ranked highest in predicting closing price, though all indicators contributed relatively equally (~0.12–0.13 importance score each)
-- **Model Performance:** Linear Regression (MAE: $1,013) and Random Forest (MAE: $1,016) performed similarly, suggesting the synthetic dataset lacks the non-linear relationships that would give Random Forest an advantage over real data
-- **Macro Regimes:** SQL analysis showed the best S&P 500 returns occurred during low inflation + low unemployment periods (avg daily return +1.39), while high inflation + high unemployment produced the worst returns (-2.52)
-- **Volatility:** The 10 most volatile trading days were predominantly bearish (7 out of 10 closed lower than they opened)
+- **Top predictor:** Lagged unemployment rate ranked #1 in feature importance (10.3%), outranking same-day unemployment (8.4%) — directly supporting the lagging effect hypothesis
+- **Lagging effect confirmed:** Both unemployment and inflation showed higher predictive power in their lagged form, suggesting macro indicators affect volatility with a 1-day delay
+- **Model performance:** Linear Regression (MAE: 1.51%) and Random Forest (MAE: 1.54%) performed similarly, consistent with the synthetic nature of the dataset
+- **SQL findings:** Recession signal days had nearly 2.5x worse average daily returns (-1.66 vs -0.69). The best macro regime was low inflation + low unemployment (avg return +1.39)
 
 ---
 
