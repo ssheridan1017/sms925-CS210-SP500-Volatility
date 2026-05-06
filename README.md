@@ -1,32 +1,33 @@
-# sms925-CS210-SP500-Volatility
-# Forecasting S&P 500 Volatility: A Machine Learning Approach using Macroeconomic Indicators (2000-2008)
+# Forecasting S&P500 Volatility: A Machine Learning Approach using Macroeconomic Indicators
+
 **CS 210: Data Management for Data Science**
 **Sam Sheridan**
 
 ---
 
-## Project Overview
-This project builds an end-to-end data management and machine learning pipeline to analyze how macroeconomic indicators influence S&P 500 daily volatility. Using a dataset of S&P 500 prices and macroeconomic data from 2000–2008, the project cleans raw data, stores it in a SQL database, performs exploratory data analysis, and compares a Random Forest Regressor against a Linear Regression baseline to predict closing price.
+## Overview
+This project builds an end-to-end data management and machine learning pipeline to analyze how macroeconomic indicators influence S&P 500 daily volatility. The dataset covers S&P 500 prices and macroeconomic data from 2000–2008. The pipeline covers data cleaning, SQL database design, exploratory data analysis, and a comparison of a Random Forest Regressor against a Linear Regression baseline.
 
 ---
 
-## Repository Structure
+## Project Goals
+- Clean and filter raw S&P 500 and macroeconomic data using Pandas
+- Store data in a SQLite database with two relational tables joined by date key
+- Perform exploratory data analysis with 9 Matplotlib visualizations
+- Engineer a daily volatility target variable and lagged macro features to capture the delayed effect of indicators on market behavior
+- Train and compare a Random Forest Regressor vs Linear Regression baseline using MAE and RMSE
+- Identify which macroeconomic indicators most influence S&P 500 volatility via feature importance
+
+---
+
+## Project Structure
 ```
 cs210-project/
 ├── data/
-│   ├── stock_macro_data.csv        # Raw dataset (source: Kaggle)
+│   ├── stock_macro_data.csv        # Raw dataset (Kaggle)
 │   ├── sp500_clean.csv             # Cleaned S&P 500 only dataset
-│   └── sp500_with_lags.csv        # Dataset with lagged macro features
-├── charts/
-│   ├── chart1_close_price.png      # S&P 500 closing price over time
-│   ├── chart2_volatility_over_time.png
-│   ├── chart3_volatility_distribution.png
-│   ├── chart4_macro_indicators.png
-│   ├── chart5_correlation_heatmap.png
-│   ├── chart6_scatter_plots.png
-│   ├── chart7_feature_importance.png
-│   ├── chart8_actual_vs_predicted.png
-│   └── chart9_model_comparison.png
+│   └── sp500_with_lags.csv         # Dataset with lagged macro features
+├── charts/                         # All 9 generated visualizations
 ├── data_cleaning.py                # Step 1: Clean and prepare data
 ├── eda.py                          # Step 2: Exploratory data analysis
 ├── sql_database.py                 # Step 3: SQL database and queries
@@ -38,69 +39,74 @@ cs210-project/
 
 ---
 
-## How to Run
-
-### 1. Install dependencies
-```bash
-pip install -r requirements.txt
+## Target Variable
 ```
-
-### 2. Run scripts in order
-Each script builds on the output of the previous one. Run them in this sequence:
-
-```bash
-# Step 1 — Clean the raw data
-python data_cleaning.py
-
-# Step 2 — Generate EDA charts
-python eda.py
-
-# Step 3 — Build SQL database and run analytical queries
-python sql_database.py
-
-# Step 4 — Train models and evaluate
-python model.py
+daily_volatility_pct = (High - Low) / Open × 100
 ```
+Measures how much the S&P 500 swung intraday as a percentage — a standard measure of daily market volatility.
 
-### 3. Outputs
-- Cleaned datasets saved to `data/`
-- Charts saved to `charts/`
-- SQL database saved as `sp500_project.db` (excluded from repo via .gitignore)
+---
+
+## Features (12 total)
+**Same-day macro indicators:** GDP Growth, Inflation Rate, Unemployment Rate, Interest Rate, Consumer Confidence, Crude Oil Price, Gold Price, Consumer Spending
+
+**Lagged indicators (previous day):** GDP Growth, Inflation Rate, Unemployment Rate, Consumer Confidence
+
+---
+
+## Results
+
+### Model Performance
+| Metric | Linear Regression | Random Forest |
+|--------|------------------|---------------|
+| MAE    | 1.51%            | 1.54%         |
+| RMSE   | 1.95%            | 2.00%         |
+
+Both models performed similarly. Linear Regression marginally outperformed Random Forest, consistent with the synthetic nature of the dataset which limits non-linear pattern detection.
+
+### Feature Importance (Top 5)
+| Rank | Indicator | Importance |
+|------|-----------|------------|
+| 1 | unemployment_rate_pct_lag1 | 10.3% |
+| 2 | consumer_spending_bln | 9.4% |
+| 3 | inflation_rate_pct | 9.2% |
+| 4 | crude_oil_price | 8.8% |
+| 5 | inflation_rate_pct_lag1 | 8.7% |
+
+Lagged unemployment ranked #1, outperforming same-day unemployment (8.4%) — directly supporting the lagging effect hypothesis that macro indicators affect volatility with a time delay.
+
+### Key SQL Findings
+- Recession signal days (low GDP + high unemployment) had nearly 2.5x worse average daily returns (-1.66 vs -0.69)
+- Best macro regime: Low inflation + low unemployment (avg return +1.39)
+- Worst macro regime: High inflation + high unemployment (avg return -2.52)
+- 7 of the 10 most volatile days were bearish
 
 ---
 
 ## Dataset
 - **Source:** Kaggle — "Finance & Economics Dataset (2000-Present)" by Khushi Yadav
-- **Original size:** 3,000 rows × 24 columns (S&P 500, Dow Jones, NASDAQ)
-- **After cleaning:** 1,036 rows × 24 columns (S&P 500 only)
-- **Note:** Dataset covers 2000–2008 and is synthetic in nature. Results are intended as a proof-of-concept pipeline rather than real-world predictions.
+- **Raw size:** 3,000 rows × 24 columns (S&P 500, Dow Jones, NASDAQ)
+- **After cleaning:** 1,036 rows (S&P 500 only)
+- **Note:** Dataset is synthetic and covers 2000–2008. Results represent a proof-of-concept pipeline.
 
 ---
 
-## Methodology
-| Step | Tool | Description |
-|------|------|-------------|
-| Data Cleaning | Pandas | Filter to S&P 500, fix types, engineer volatility feature, create lag features |
-| EDA | Matplotlib | 6 charts exploring price trends, volatility, and macro indicator relationships |
-| SQL Database | SQLite | Two tables (prices + macro indicators) joined by date key, 5 analytical queries |
-| Modeling | scikit-learn | Random Forest Regressor vs Linear Regression baseline, evaluated with MAE and RMSE |
-
----
-
-## Key Findings
-- **Top predictor:** Lagged unemployment rate ranked #1 in feature importance (10.3%), outranking same-day unemployment (8.4%), this directly supports the lagging effect hypothesis
-- **Lagging effect confirmed:** Both unemployment and inflation showed higher predictive power in their lagged form, suggesting macro indicators affect volatility with a 1-day delay
-- **Model performance:** Linear Regression (MAE: 1.51%) and Random Forest (MAE: 1.54%) performed similarly, consistent with the synthetic nature of the dataset
-- **SQL findings:** Recession signal days had nearly 2.5x worse average daily returns (-1.66 vs -0.69). The best macro regime was low inflation + low unemployment (avg return +1.39)
+## Limitations
+- Synthetic dataset limits real-world generalizability
+- 1-day lag may be insufficient — real macro effects can take weeks or months
+- No sentiment indicators (VIX, bond yields) which are known volatility predictors
 
 ---
 
 ## Dependencies
-See `requirements.txt` for full list. Main libraries:
+```
+pip install -r requirements.txt
+```
 - `pandas` — data cleaning and manipulation
 - `matplotlib` — visualizations
 - `scikit-learn` — machine learning models
-- `sqlite3` — SQL database (built into Python, no install needed)
+- `numpy` — numerical operations
+- `sqlite3` — built into Python, no install needed
 
 ---
 
