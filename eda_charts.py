@@ -33,7 +33,7 @@ plt.close()
 print("Saved chart1_close_price.png")
  
 # CHART 2: DAILY VOLATILITY OVER TIME 
-# This is your TARGET VARIABLE. You should see spikes around major events.
+# This is the TARGET VARIABLE. You should see spikes around major events.
 fig, ax = plt.subplots(figsize=(12, 4))
 ax.plot(df["date"], df["daily_volatility_pct"], color="#d62728", linewidth=0.8, alpha=0.8)
 ax.set_title("S&P 500 Daily Volatility % Over Time (2000–2008)", fontsize=14)
@@ -85,7 +85,7 @@ print("Saved chart4_macro_indicators.png")
  
 # CHART 5: CORRELATION HEATMAP 
 # Shows which indicators correlate most with daily volatility.
-# This directly informs which features you use in your Random Forest.
+# This directly informs which features I use in Random Forest.
 macro_cols = [
     "gdp_growth_pct",
     "inflation_rate_pct",
