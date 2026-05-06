@@ -102,19 +102,19 @@ df_lag.reset_index(drop=True, inplace = True)
 
 #Data Summary
 print("CLEAN DATA SUMMARY (sp500_clean.csv)")
-print(f"Shape      : {df.shape[0]:,} rows × {df.shape[1]} columns")
-print(f"Date range : {df['date'].min().date()}  →  {df['date'].max().date()}")
+print(f"Shape: {df.shape[0]:,} rows × {df.shape[1]} columns")
+print(f"Date range: {df['date'].min().date()}  →  {df['date'].max().date()}")
 print(f"Null values: {df.isnull().sum().sum()}")
  
 print()
 print("LAG DATASET SUMMARY (sp500_with_lags.csv)")
-print(f"Shape      : {df_lag.shape[0]:,} rows × {df_lag.shape[1]} columns")
-print(f"Date range : {df_lag['date'].min().date()}  →  {df_lag['date'].max().date()}")
+print(f"Shape: {df_lag.shape[0]:,} rows × {df_lag.shape[1]} columns")
+print(f"Date range: {df_lag['date'].min().date()}  →  {df_lag['date'].max().date()}")
 print(f"Null values: {df_lag.isnull().sum().sum()}")
 print()
 print("Added lag columns:")
 for col in lag_cols:
-    print(f"  {col}_lag1")
+    print(f"{col}_lag1")
 
 #Export
 df.to_csv(clean, index=False)
