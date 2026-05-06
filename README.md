@@ -6,7 +6,7 @@
 ---
 
 ## Project Overview
-This project builds an end-to-end data management and machine learning pipeline to analyze how macroeconomic indicators influence S&P 500 closing prices. Using a dataset of S&P 500 prices and macroeconomic data from 2000–2008, the project cleans raw data, stores it in a SQL database, performs exploratory data analysis, and compares a Random Forest Regressor against a Linear Regression baseline to predict closing price.
+This project builds an end-to-end data management and machine learning pipeline to analyze how macroeconomic indicators influence S&P 500 daily volatility. Using a dataset of S&P 500 prices and macroeconomic data from 2000–2008, the project cleans raw data, stores it in a SQL database, performs exploratory data analysis, and compares a Random Forest Regressor against a Linear Regression baseline to predict closing price.
 
 ---
 
