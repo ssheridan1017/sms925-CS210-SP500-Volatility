@@ -43,7 +43,7 @@ cs210-project/
 ```
 daily_volatility_pct = (High - Low) / Open × 100
 ```
-Measures how much the S&P 500 swung intraday as a percentage — a standard measure of daily market volatility.
+Measures how much the S&P 500 swung that day as a percentage. This is a standard measure of daily market volatility.
 
 ---
 
@@ -73,7 +73,7 @@ Both models performed similarly. Linear Regression marginally outperformed Rando
 | 4 | crude_oil_price | 8.8% |
 | 5 | inflation_rate_pct_lag1 | 8.7% |
 
-Lagged unemployment ranked #1, outperforming same-day unemployment (8.4%) — directly supporting the lagging effect hypothesis that macro indicators affect volatility with a time delay.
+Lagged unemployment ranked #1, outperforming same-day unemployment (8.4%). This directly supports the lagging effect hypothesis that macro indicators affect volatility with a time delay.
 
 ### Key SQL Findings
 - Recession signal days (low GDP + high unemployment) had nearly 2.5x worse average daily returns (-1.66 vs -0.69)
@@ -84,7 +84,7 @@ Lagged unemployment ranked #1, outperforming same-day unemployment (8.4%) — di
 ---
 
 ## Dataset
-- **Source:** Kaggle — "Finance & Economics Dataset (2000-Present)" by Khushi Yadav
+- **Source:** Kaggle - "Finance & Economics Dataset (2000-Present)" by Khushi Yadav
 - **Raw size:** 3,000 rows × 24 columns (S&P 500, Dow Jones, NASDAQ)
 - **After cleaning:** 1,036 rows (S&P 500 only)
 - **Note:** Dataset is synthetic and covers 2000–2008. Results represent a proof-of-concept pipeline.
@@ -93,7 +93,7 @@ Lagged unemployment ranked #1, outperforming same-day unemployment (8.4%) — di
 
 ## Limitations
 - Synthetic dataset limits real-world generalizability
-- 1-day lag may be insufficient — real macro effects can take weeks or months
+- 1-day lag may be insufficient real macro effects can take weeks or months
 - No sentiment indicators (VIX, bond yields) which are known volatility predictors
 
 ---
@@ -102,11 +102,11 @@ Lagged unemployment ranked #1, outperforming same-day unemployment (8.4%) — di
 ```
 pip install -r requirements.txt
 ```
-- `pandas` — data cleaning and manipulation
-- `matplotlib` — visualizations
-- `scikit-learn` — machine learning models
-- `numpy` — numerical operations
-- `sqlite3` — built into Python, no install needed
+- `pandas` - data cleaning and manipulation
+- `matplotlib` - visualizations
+- `scikit-learn` - machine learning models
+- `numpy` - numerical operations
+- `sqlite3` - built into Python, no install needed
 
 ---
 
