@@ -65,10 +65,10 @@ print("Saved chart3_volatility_distribution.png")
 fig, axes = plt.subplots(4, 1, figsize=(12, 10), sharex=True)
  
 indicators = [
-    ("inflation_rate_pct",    "Inflation Rate (%)",    "#2ca02c"),
-    ("unemployment_rate_pct", "Unemployment Rate (%)", "#9467bd"),
-    ("gdp_growth_pct",        "GDP Growth (%)",        "#8c564b"),
-    ("interest_rate_pct",     "Interest Rate (%)",     "#e377c2"),
+    ("inflation_rate_pct","Inflation Rate (%)","#2ca02c"),
+    ("unemployment_rate_pct", "Unemployment Rate "#9467bd"),
+    ("gdp_growth_pct","GDP Growth (%)","#8c564b"),
+    ("interest_rate_pct","Interest Rate (%)","#e377c2"),
 ]
  
 for ax, (col, label, color) in zip(axes, indicators):
@@ -128,10 +128,10 @@ print("Saved chart5_correlation_heatmap.png")
 # Scatter plots for the indicators with the strongest correlation to volatility.
 fig, axes = plt.subplots(2, 2, figsize=(10, 8))
 scatter_cols = [
-    ("gdp_growth_pct",        "GDP Growth (%)"),
-    ("inflation_rate_pct",    "Inflation Rate (%)"),
-    ("unemployment_rate_pct", "Unemployment Rate (%)"),
-    ("interest_rate_pct",     "Interest Rate (%)"),
+    ("gdp_growth_pct","GDP Growth (%)"),
+    ("inflation_rate_pct","Inflation Rate (%)"),
+    ("unemployment_rate_pct","Unemployment Rate (%)"),
+    ("interest_rate_pct","Interest Rate (%)"),
 ]
  
 for ax, (col, label) in zip(axes.flat, scatter_cols):
