@@ -39,6 +39,41 @@ cs210-project/
 
 ---
 
+## How to Run the Pipeline
+To accurately reproduce the findings, the scripts must be executed in the following chronological order:
+
+**1. Install Dependencies:**
+Ensure all required packages are installed before running the scripts.
+```bash
+pip install -r requirements.txt
+```
+
+**2. Step 1: Data Cleaning**
+```bash
+python cleaning.py
+```
+*Ingests the raw Kaggle data, filters for the S&P 500, verifies price integrity, and engineers the 1-day lag features. Outputs `sp500_clean.csv` and `sp500_with_lags.csv`.*
+
+**3. Step 2: Database Architecture**
+```bash
+python sql_database.py
+```
+*Builds the relational SQLite database (`sp500_project.db`), performs an `INNER JOIN` on the date key, and executes analytical queries (like Recession Signal analysis) directly in the console.*
+
+**4. Step 3: Exploratory Data Analysis**
+```bash
+python eda_charts.py
+```
+*Mathematically analyzes the cleaned data and generates the core visualization charts, including the correlation heatmap and volatility distribution.*
+
+**5. Step 4: Machine Learning Models**
+```bash
+python model.py
+```
+*Trains both the Linear Regression and Random Forest models with `shuffle=False` to preserve chronological integrity. Outputs final evaluation metrics (MAE/RMSE) and feature importance charts.*
+
+---
+
 ## Target Variable
 ```
 daily_volatility_pct = (High - Low) / Open × 100
